@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Chlothzy Product Card</title>
+  <style>
+    :root {
+      --card-max-w: 320px;
+      --radius: 0.75rem;
+      --border-active: 2px solid #000;
+      --border-inactive: 2px solid transparent;
+      --transition-fast: 150ms;
+      --text-color: #111;
+      --muted: #666;
+      --font-body: system-ui, sans-serif;
+    }
+
+    body {
+      font-family: var(--font-body);
+      display: grid;
+      place-content: center;
+      min-height: 100dvh;
+      margin: 0;
+      background:#f5f5f5;
+      color: var(--text-color);
+      padding: 1rem;
+    }
+
+    .product-card {
+      width: 100%;
+      max-width: var(--card-max-w);
+      display: grid;
+      gap: 1rem;
+      padding: 1rem;
+      background:#fff;
+      border-radius: var(--radius);
+      box-shadow: 0 4px 16px rgba(0,0,0,.08);
+    }
+
+    .product-card__media {
+      width: 100%;
+      aspect-ratio: 1 / 1; /* square */
+      overflow: hidden;
+      border-radius: var(--radius);
+      position: relative;
+    }
+    .product-card__media img {
+      width: 80%;
+      height: 100%;
+      object-fit: cover;
+      transition: opacity var(--transition-fast) ease-in-out, transform var(--transition-fast) ease-in-out;
+    }
+    .product-card__media img.is-fading {
+      opacity: 0;
+      transform: scale(.98);
+    }
+
+    .product-card__title {
+      margin: 0;
+      font-size: 1.25rem;
+      line-height: 1.2;
+    }
+    .product-card__price {
+      margin: 0;
+      font-weight: 600;
+    }
+    .product-card__sku {
+      margin: 0;
+      font-size: .875rem;
+      color: var(--muted);
+    }
+
+    .product-card__swatches {
+      display: flex;
+      gap: .5rem;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .swatch {
+      --swatch-size: 32px;
+      width: var(--swatch-size);
+      height: var(--swatch-size);
+      border-radius: 50%;
+      border: var(--border-inactive);
+      cursor: pointer;
+      position: relative;
+      outline: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform var(--transition-fast) ease, border var(--transition-fast) ease;
+    }
+    .swatch[aria-checked="true"] {
+      border: var(--border-active);
+      transform: scale(1.05);
+    }
+    .swatch:focus-visible {
+      outline: 2px dashed #333;
+      outline-offset: 2px;
+    }
+    .swatch__check {
+      font-size: 0;
+      line-height: 0;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: #fff;
+      opacity: 0;
+      transition: opacity var(--transition-fast) ease;
+    }
+    .swatch[aria-checked="true"] .swatch__check {
+      opacity: 1;
+    }
+
+    /* Utility for visually hidden but accessible text */
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0 0 0 0);
+      white-space: nowrap;
+      border: 0;
+    }
+  </style>
+</head>
+<body>
+  <section class="product-card" data-product-id="sku123" aria-labelledby="prod-title">
+    <figure class="product-card__media">
+      <img id="prod-img" src="https://via.placeholder.com/600x600?text=Red" alt="Red T‑Shirt – Front view" />
+    </figure>
+    <header>
+      <h2 id="prod-title" class="product-card__title">Chlothzy Classic Tee</h2>
+      <p id="prod-price" class="product-card__price" data-currency="INR">₹1,299</p>
+      <p class="product-card__sku" id="prod-sku">SKU: SKU123-RED</p>
+    </header>
+
+    <div class="product-card__swatches" role="radiogroup" aria-label="Choose color" id="color-swatches">
+  
+    </div>
+  </section>
+
+  <script>
+
+    const PRODUCT_DATA = {
+      id: 'sku123',
+      name: 'Chlothzy Classic Tee',
+      currency: 'INR',
+      baseAlt: 'T-Shirt – Front view',
+      variants: {
+        red: {
+          label: 'Red',
+          price: 999,
+          img: './image/61AjJEsvEHL._UY1100_.jpg'
+        },
+        blue: {
+          label: 'Blue',
+          price: 1049,
+          img: './image/images (1).jpeg'
+        },
+        green: {
+          label: 'Green',
+          price: 1099,
+          img: './image/CROFTYGREEN07025.webp'
+        }
+      },
+      defaultColor: 'red'
+    };
+
+   
+    const fmt = new Intl.NumberFormat('en-IN', { style: 'currency', currency: PRODUCT_DATA.currency });
+
+    function createSwatch(colorKey, variant, isSelected) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'swatch';
+      btn.setAttribute('role', 'radio');
+      btn.setAttribute('aria-checked', String(isSelected));
+      btn.setAttribute('tabindex', isSelected ? '0' : '-1');
+      btn.dataset.color = colorKey;
+      btn.style.background = colorKey; // simple; could map to hex if needed
+
+      // Hidden text for screen readers
+      const label = document.createElement('span');
+      label.className = 'sr-only';
+      label.textContent = variant.label;
+      btn.appendChild(label);
+
+      // Tiny center dot when active
+      const mark = document.createElement('span');
+      mark.className = 'swatch__check';
+      btn.appendChild(mark);
+
+      return btn;
+    }
+
+    function updateSelection(newColor) {
+      const variant = PRODUCT_DATA.variants[newColor];
+      if (!variant) return;
+
+
+      const img = document.getElementById('prod-img');
+      img.classList.add('is-fading');
+  
+      setTimeout(() => {
+        img.src = variant.img;
+        img.alt = `${variant.label} ${PRODUCT_DATA.baseAlt}`;
+        img.classList.remove('is-fading');
+      }, 100);
+
+      // Update price & SKU
+      const priceEl = document.getElementById('prod-price');
+      priceEl.textContent = fmt.format(variant.price);
+      const skuEl = document.getElementById('prod-sku');
+      skuEl.textContent = `SKU: ${variant.sku}`;
+
+      // Update aria state on swatches
+      const swatchContainer = document.getElementById('color-swatches');
+      [...swatchContainer.children].forEach(btn => {
+        const isCurrent = btn.dataset.color === newColor;
+        btn.setAttribute('aria-checked', String(isCurrent));
+        btn.tabIndex = isCurrent ? 0 : -1;
+      });
+
+      // Move focus to newly selected swatch for keyboard users
+      const active = swatchContainer.querySelector(`[data-color="${newColor}"]`);
+      if (active) active.focus();
+    }
+
+    function handleSwatchClick(e) {
+      const btn = e.target.closest('.swatch');
+      if (!btn) return;
+      const color = btn.dataset.color;
+      updateSelection(color);
+    }
+
+    function handleSwatchKey(e) {
+      const current = document.activeElement.closest('.swatch');
+      if (!current) return;
+
+      const container = document.getElementById('color-swatches');
+      const swatches = [...container.children];
+      const currentIdx = swatches.indexOf(current);
+
+      // Space/Enter selects
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        updateSelection(current.dataset.color);
+        return;
+      }
+
+      // Optional arrow navigation
+      let nextIdx = null;
+      if (['ArrowRight','ArrowDown'].includes(e.key)) {
+        nextIdx = (currentIdx + 1) % swatches.length;
+      } else if (['ArrowLeft','ArrowUp'].includes(e.key)) {
+        nextIdx = (currentIdx - 1 + swatches.length) % swatches.length;
+      }
+      if (nextIdx != null) {
+        e.preventDefault();
+        swatches[nextIdx].focus();
+      }
+    }
+
+ 
+    function initProductCard() {
+      const swatchContainer = document.getElementById('color-swatches');
+      const { variants, defaultColor } = PRODUCT_DATA;
+      Object.entries(variants).forEach(([key, variant]) => {
+        const swatch = createSwatch(key, variant, key === defaultColor);
+        swatchContainer.appendChild(swatch);
+      });
+
+  
+      swatchContainer.addEventListener('click', handleSwatchClick);
+      swatchContainer.addEventListener('keydown', handleSwatchKey);
+
+      updateSelection(defaultColor);
+    }
+
+    document.addEventListener('DOMContentLoaded', initProductCard);
+  </script>
+</body>
+</html>

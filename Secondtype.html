@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dynamic Product Card</title>
+  <style>
+    :root {
+      --card-max-width: 320px;
+      --border-radius: 0.75rem;
+      --transition-speed: 0.3s;
+      --active-border: 2px solid #000;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #f5f5f5;
+      margin: 0;
+    }
+
+    .product-card {
+      max-width: var(--card-max-width);
+      background: #fff;
+      border-radius: var(--border-radius);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 1rem;
+      text-align: center;
+    }
+
+    figure {
+      margin: 0;
+    }
+
+    figure img {
+      width: 100%;
+      border-radius: var(--border-radius);
+      transition: opacity var(--transition-speed) ease-in-out;
+    }
+
+    h2 {
+      font-size: 1.25rem;
+      margin: 0.5rem 0;
+    }
+
+    p {
+      font-size: 1rem;
+      font-weight: bold;
+      color: #333;
+    }
+
+    .swatches {
+      display: flex;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .swatch {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      border: 1px solid #ccc;
+      cursor: pointer;
+      transition: border var(--transition-speed);
+    }
+
+    .swatch[aria-checked="true"] {
+      border: var(--active-border);
+    }
+
+    @media (max-width: 480px) {
+      .product-card {
+        max-width: 90%;
+        padding: 0.75rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <article class="product-card">
+    <figure>
+      <img id="productImage" src="https://via.placeholder.com/300x300/000000/FFFFFF?text=Black+Product" alt="Black Product" />
+    </figure>
+    <h2 id="productName">Stylish T-Shirt</h2>
+    <p id="productPrice">$25</p>
+
+    <div class="swatches" role="radiogroup" aria-label="Choose product color">
+      <button class="swatch" style="background-color: black;" aria-checked="true" aria-label="Black"></button>
+      <button class="swatch" style="background-color: red;" aria-checked="false" aria-label="Red"></button>
+      <button class="swatch" style="background-color: blue;" aria-checked="false" aria-label="Blue"></button>
+    </div>
+  </article>
+
+  <script>
+    const productImage = document.getElementById("productImage");
+    const productPrice = document.getElementById("productPrice");
+    const swatches = document.querySelectorAll(".swatch");
+
+    // Array of product variations
+    const variations = [
+      { color: "black", image: "./image/41nsudKpslL._UY1100_.jpg", price: "$25" },
+      { color: "red", image: "./image/61AjJEsvEHL._UY1100_.jpg", price: "$30" },
+      { color: "blue", image: "./image/images (1).jpeg", price: "$28" }
+    ];
+
+    swatches.forEach((swatch, index) => {
+      swatch.addEventListener("click", () => {
+        // Update image & price
+        productImage.style.opacity = 0;
+        setTimeout(() => {
+          productImage.src = variations[index].image;
+          productImage.alt = variations[index].color + " product";
+          productPrice.textContent = variations[index].price;
+          productImage.style.opacity = 1;
+        }, 200);
+
+        // Update ARIA checked state
+        swatches.forEach(btn => btn.setAttribute("aria-checked", "false"));
+        swatch.setAttribute("aria-checked", "true");
+      });
+    });
+  </script>
+
+  <!--
+  ================== TECHNICAL EXPLANATION ==================
+  1. Overall Approach & Goal:
+     - This feature allows users to switch between product color variants in real-time.
+     - Benefits: Real-time color/image/price updates improve engagement and provide a cleaner user experience.
+
+  2. HTML Structure:
+     - <figure> wraps the product image.
+     - <h2> displays the product name.
+     - <p> displays the product price.
+     - Color swatches are implemented using <button> elements with ARIA roles for accessibility.
+
+  3. CSS Styling & Responsiveness:
+     - Flexbox is used for the swatches for responsive alignment.
+     - Swatches are styled as colored circles with active border state.
+     - CSS variables ensure consistent styling.
+     - Transitions are added for smooth image fading when switching.
+
+  4. JavaScript Functionality:
+     - An array of objects stores variations (color, image, price).
+     - Event listeners on swatches update the DOM (image source, price, and ARIA checked state).
+     - Smooth fade-in/out animation is achieved by toggling opacity.
+
+  5. Accessibility Considerations:
+     - All images have alt attributes.
+     - Swatches use ARIA roles (radiogroup, aria-checked).
+     - Users can navigate swatches via keyboard since they are buttons.
+
+  6. Potential Challenges & Solutions:
+     - Image loading lag: Can preload images.
+     - Unavailable variants: Could disable swatches.
+     - Touch devices: Buttons ensure proper tap response.
+
+  ===========================================================
+  -->
+</body>
+</html>
